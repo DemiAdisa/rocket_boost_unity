@@ -13,9 +13,12 @@ public class Movement : MonoBehaviour
 
     Rigidbody thisRigidBody;
 
+    AudioSource thisAudioPlayer;
+
     void Start()
     {
         thisRigidBody = GetComponent<Rigidbody>();
+        thisAudioPlayer = GetComponent<AudioSource>();
         
     }
 
@@ -41,8 +44,19 @@ public class Movement : MonoBehaviour
     {
         if (thrust.IsPressed())
         {
+            // Relative force is used to add force to an object relative to its local axis
             thisRigidBody.AddRelativeForce(Vector3.up * thrustStrength * Time.fixedDeltaTime);
 
+            // Only play if is ntp already playing
+            if (!thisAudioPlayer.isPlaying)
+            {
+                thisAudioPlayer.Play();
+            }
+
+        }
+        else
+        {
+            thisAudioPlayer.Stop();
         }
     }
 
@@ -53,11 +67,22 @@ public class Movement : MonoBehaviour
         // Rotation to the left
         if (rotationInput < 0)
         {
-            transform.Rotate(Vector3.forward * rotateStrength * Time.fixedDeltaTime);
+            ApplyRotation(rotateStrength);
         }
         else if (rotationInput > 0)
         {
-            transform.Rotate(-Vector3.forward * rotateStrength * Time.fixedDeltaTime);
+            ApplyRotation(-rotateStrength);
         }
+    }
+
+    private void ApplyRotation(float rotationThisFrame)
+    {
+        // This will prevent the Rotation in the Rigidbody pyhsics clashing with the applied rotation
+        thisRigidBody.freezeRotation = true;
+
+        transform.Rotate(Vector3.forward * rotationThisFrame * Time.fixedDeltaTime);
+
+        // Unfreeze
+        thisRigidBody.freezeRotation = false;
     }
 }
