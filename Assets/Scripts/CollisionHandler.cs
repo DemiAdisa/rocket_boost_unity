@@ -1,5 +1,6 @@
 using Unity.XR.Oculus.Input;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
@@ -14,17 +15,47 @@ public class CollisionHandler : MonoBehaviour
 
     // Simple State Implementation
     bool isControllable;
+    bool isCollidable;
 
     void Start()
     {
         isControllable = true;
+        isCollidable = true;
         thisAudioPlayer = GetComponent<AudioSource>();
+    }
+
+    void Update()
+    {
+        RespondToDebugKeys();
+    }
+
+    void RespondToDebugKeys()
+    {
+        // Check if L key is pressed in the particluar frame
+        if (Keyboard.current.lKey.wasPressedThisFrame)
+        {
+            LoadNextLevel();
+        }
+        else if (Keyboard.current.cKey.wasPressedThisFrame)
+        {
+            isCollidable = !isCollidable;
+
+            if (isCollidable)
+            {
+                Debug.Log("Collision On");
+            }
+            else
+            {
+                Debug.Log("Collision Off");
+            }
+
+        }
     }
 
     void OnCollisionEnter(Collision collision)
     {
 
-        if (isControllable)
+        if (isControllable && isCollidable)
         {
             switch (collision.gameObject.tag)
             {
@@ -53,7 +84,13 @@ public class CollisionHandler : MonoBehaviour
         DisablePlayer();
         thisAudioPlayer.Stop(); // Stop all current playing audio
         thisAudioPlayer.PlayOneShot(successSFX);
-        successParticles.Play();
+
+        // Only play if not already playing
+        if (!successParticles.isPlaying)
+        {
+            successParticles.Play();
+        }
+        
 
         Invoke("LoadNextLevel", restartDelay);
     }
@@ -63,7 +100,12 @@ public class CollisionHandler : MonoBehaviour
         DisablePlayer();
         thisAudioPlayer.Stop(); // Stop all current playing audio
         thisAudioPlayer.PlayOneShot(crashSFX);
-        crashParticles.Play();
+
+        // Only play if not already playing
+        if (!crashParticles.isPlaying)
+        {
+            crashParticles.Play();
+        }
 
         // Invoke() helps us call methods after a delay
         Invoke("ReloadLevel", restartDelay);

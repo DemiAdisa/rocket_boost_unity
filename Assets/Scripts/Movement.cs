@@ -49,28 +49,32 @@ public class Movement : MonoBehaviour
     {
         if (thrust.IsPressed())
         {
-            // Relative force is used to add force to an object relative to its local axis
-            thisRigidBody.AddRelativeForce(Vector3.up * thrustStrength * Time.fixedDeltaTime);
-
-            // Only play if is not already playing
-            if (!thisAudioPlayer.isPlaying)
-            {
-                thisAudioPlayer.PlayOneShot(mainEngine);
-            }
-
-            // Only play if is not already playing
-            if (!mainBoosterParticles.isPlaying)
-            {
-                // Play PArtcle Effect
-                mainBoosterParticles.Play();
-            }
-            
+            BeginThrusting();
 
         }
         else
         {
             thisAudioPlayer.Stop();
             mainBoosterParticles.Stop();
+        }
+    }
+
+    void BeginThrusting()
+    {
+        // Relative force is used to add force to an object relative to its local axis
+        thisRigidBody.AddRelativeForce(Vector3.up * thrustStrength * Time.fixedDeltaTime);
+
+        // Only play if is not already playing
+        if (!thisAudioPlayer.isPlaying)
+        {
+            thisAudioPlayer.PlayOneShot(mainEngine);
+        }
+
+        // Only play if is not already playing
+        if (!mainBoosterParticles.isPlaying)
+        {
+            // Play PArtcle Effect
+            mainBoosterParticles.Play();
         }
     }
 
