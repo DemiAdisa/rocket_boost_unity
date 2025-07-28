@@ -4,30 +4,46 @@ using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
 {
-
-    AudioSource thisAudioPlayer;
     [SerializeField] float restartDelay = 2f;
     [SerializeField] AudioClip crashSFX;
     [SerializeField] AudioClip successSFX;
+    [SerializeField] ParticleSystem successParticles;
+    [SerializeField] ParticleSystem crashParticles;
+
+    AudioSource thisAudioPlayer;
+
+    // Simple State Implementation
+    bool isControllable;
 
     void Start()
     {
+        isControllable = true;
         thisAudioPlayer = GetComponent<AudioSource>();
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        switch (collision.gameObject.tag)
+
+        if (isControllable)
         {
-            case "Finish":
-                StartWinSequence();
-                break;
-            case "Friendly":
-                Debug.Log("We pals");
-                break;
-            default:
-                StartCrashSequence();
-                break;
+            switch (collision.gameObject.tag)
+            {
+                case "Finish":
+                    StartWinSequence();
+                    break;
+                case "Friendly":
+                    Debug.Log("We pals");
+                    break;
+                default:
+                    StartCrashSequence();
+                    break;
+            }
+
+
+        }
+        else
+        {
+            return;
         }
 
     }
@@ -35,7 +51,9 @@ public class CollisionHandler : MonoBehaviour
     void StartWinSequence()
     {
         DisablePlayer();
+        thisAudioPlayer.Stop(); // Stop all current playing audio
         thisAudioPlayer.PlayOneShot(successSFX);
+        successParticles.Play();
 
         Invoke("LoadNextLevel", restartDelay);
     }
@@ -43,7 +61,9 @@ public class CollisionHandler : MonoBehaviour
     void StartCrashSequence()
     {
         DisablePlayer();
+        thisAudioPlayer.Stop(); // Stop all current playing audio
         thisAudioPlayer.PlayOneShot(crashSFX);
+        crashParticles.Play();
 
         // Invoke() helps us call methods after a delay
         Invoke("ReloadLevel", restartDelay);
@@ -75,9 +95,10 @@ public class CollisionHandler : MonoBehaviour
         SceneManager.LoadScene(sceneIndex);
     }
 
-    
+
     void DisablePlayer()
     {
+        isControllable = false;
         // Get the Movement Script compoinent and set it to diabled
         GetComponent<Movement>().enabled = false;
     }
